@@ -1,0 +1,22 @@
+@import 'tailwindcss';
+
+@config "../tailwind.config.js";
+
+:root {
+   --light-blue: #17212c;
+   --dark-blue: #101214;
+}
+
+body {
+   box-sizing: border-box;
+   margin: 0;
+   padding: 0;
+}
+
+.gradient-background {
+   background-image: radial-gradient(
+      164.75% 100%,
+      var(--light-blue) 0%,
+      var(--dark-blue) 48.73%
+   );
+}
