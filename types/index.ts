@@ -4,15 +4,6 @@ export type IconSvgProps = SVGProps<SVGSVGElement> & {
    size?: number;
 };
 
-export interface Context {
-   quizzes: Quiz[];
-   questions: Question[];
-   addQuizToList: (quiz: Quiz) => void;
-   addQuestionToList: (questions: Question) => void;
-   editQuestionFromList: (question: Question) => void;
-   removeQuestionFromList: (questionId: number) => void;
-}
-
 export interface Quiz {
    id: number;
    title: string;
@@ -26,7 +17,7 @@ export type QuestionType = 'mcq' | 'short' | 'code';
 export interface Option {
    id: number;
    label: string;
-   isCorrect: boolean;
+   isSelected: boolean;
 }
 
 export interface Question {
@@ -61,18 +52,13 @@ export interface AttemptEvent {
    timestamp: string;
 }
 
-export interface QuestionCardProps {
-   value: Question;
-   onChange: (arg: ChangeHandler) => void;
-   title: string;
-   mode: 'read' | 'edit' | 'create';
-   onEditQuestion?: (question: Question) => void;
-   onRemoveQuestion?: (questionId: number) => void;
-}
-
 export type ChangeHandler =
    | {
-        type: 'prompt' | 'type';
+        type: 'prompt';
+        value: string;
+     }
+   | {
+        type: 'type';
         value: string;
      }
    | {

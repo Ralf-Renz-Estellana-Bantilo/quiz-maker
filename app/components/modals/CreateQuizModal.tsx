@@ -1,5 +1,6 @@
 'use client';
 
+import { Quiz } from '@/types';
 import {
    Button,
    Input,
@@ -9,19 +10,33 @@ import {
    ModalFooter,
    ModalHeader,
 } from '@heroui/react';
-import React from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 
 const CreateQuizModal = ({
    isOpen,
+   title,
+   initialValue,
    onContinue,
    onOpenChange,
 }: {
    isOpen: boolean;
-   onContinue: () => void;
+   title: string;
+   onContinue: (form: Quiz) => void;
    onOpenChange: () => void;
+   initialValue: Quiz;
 }) => {
+   const [form, setForm] = useState(initialValue);
+
+   const onChangeInput = (e: ChangeEvent<HTMLInputElement>) => {
+      const { value, id } = e.target;
+      setForm((prev) => ({
+         ...prev,
+         [id]: value,
+      }));
+   };
+
    const continueHandler = (onClose: () => void) => {
-      onContinue();
+      onContinue(form);
       onClose();
    };
 
@@ -35,15 +50,29 @@ const CreateQuizModal = ({
             {(onClose) => (
                <>
                   <ModalHeader className='flex flex-col gap-1'>
-                     Create Quiz
+                     {title}
                   </ModalHeader>
                   <ModalBody>
-                     <Input label='Title' isRequired />
-                     <Input label='Description' isRequired />
+                     <Input
+                        label='Title'
+                        isRequired
+                        id='title'
+                        value={form.title}
+                        onChange={onChangeInput}
+                     />
+                     <Input
+                        label='Description'
+                        id='description'
+                        isRequired
+                        value={form.description}
+                        onChange={onChangeInput}
+                     />
                      <Input
                         label='Time limit (mins)'
-                        isRequired
+                        id='timeLimitSeconds'
                         type='number'
+                        value={form.timeLimitSeconds?.toString()}
+                        onChange={onChangeInput}
                      />
                   </ModalBody>
                   <ModalFooter>

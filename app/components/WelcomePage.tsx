@@ -1,31 +1,50 @@
 'use client';
 
-import React from 'react';
+import React, { useContext, useState } from 'react';
 import Illustration from '@/public/assets/illustration_questions.svg';
 import Image from 'next/image';
 import { Button } from '@heroui/button';
 import { useRouter } from 'next/navigation';
 import { useDisclosure } from '@heroui/react';
 import CreateQuizModal from './modals/CreateQuizModal';
+import { ClientContext } from '../context/context';
+import { Quiz } from '@/types';
+import { setCookie } from '../utils/utils';
+import { DEFAULT_QUIZ_FORM_VALUE } from '../utils/constants';
 
 const WelcomePage = () => {
    const router = useRouter();
+   const { addQuizToList } = useContext(ClientContext);
    const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
-   const createQuizHandler = () => {
+   const createQuiz = (form: Quiz) => {
+      const quizId = Math.floor(Math.random() * 1000000);
+      const newQuiz: Quiz = {
+         ...form,
+         id: quizId,
+         createdAt: new Date(Date.now()).toString(),
+         timeLimitSeconds: form.timeLimitSeconds
+            ? form.timeLimitSeconds * 60
+            : null,
+      };
+
+      setCookie('quizId', quizId.toString());
+      addQuizToList(newQuiz);
       router.push('quizzes/create');
    };
 
-   const startQuizHandler = () => {
+   const startQuiz = () => {
       router.push('quizzes');
    };
 
    return (
       <>
          <CreateQuizModal
+            title='Create Quiz Info'
             isOpen={isOpen}
             onOpenChange={onOpenChange}
-            onContinue={createQuizHandler}
+            onContinue={createQuiz}
+            initialValue={DEFAULT_QUIZ_FORM_VALUE}
          />
          <div className='flex flex-col gap-6 w-[600px] border-1 border-slate-700 rounded-md p-3'>
             <div className='flex flex-col gap-10'>
@@ -58,7 +77,7 @@ const WelcomePage = () => {
                   <Button
                      className='flex-grow'
                      color='primary'
-                     onPress={startQuizHandler}>
+                     onPress={startQuiz}>
                      Start Quiz
                   </Button>
                </div>

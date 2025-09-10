@@ -1,47 +1,55 @@
 'use client';
 
-import React, { useState } from 'react';
-import { DeleteSVG, EditSVG, QuestionSVG } from '../icons/icons';
+import { ChangeHandler, Option, Question, QuestionType } from '@/types';
 import {
+   addToast,
    Button,
    Checkbox,
+   Chip,
    Dropdown,
    DropdownItem,
    DropdownMenu,
    DropdownTrigger,
    Input,
 } from '@heroui/react';
+import { useState } from 'react';
+import { DeleteSVG, EditSVG, QuestionSVG } from '../icons/icons';
 import { numberToCharacter } from '../utils/utils';
-import {
-   ChangeHandler,
-   Option,
-   QuestionCardProps,
-   QuestionType,
-} from '@/types';
+import { TOAST_PROPERTIES } from '../context/context';
 
+type ViewMode = 'read' | 'edit' | 'create' | 'list';
+interface QuestionCardProps {
+   value: Question;
+   onChange: (arg: ChangeHandler) => void;
+   title: string;
+   mode: ViewMode;
+   hasActionButtons?: boolean;
+   onEditQuestion?: (question: Question) => void;
+   onRemoveQuestion?: (questionId: number) => void;
+}
+
+const MAX_OPTION_LENGTH = 6;
 const DEFAULT_OPTION: Option = {
    id: 0,
    label: '',
-   isCorrect: false,
+   isSelected: false,
 };
+const typeMap: Record<QuestionType, string> = {
+   mcq: 'Multiple Choice',
+   short: 'Short Answer',
+   code: 'Code',
+};
+
 const QuestionCard = ({
    title,
    value,
-   onChange,
    mode,
+   hasActionButtons = false,
+   onChange,
    onEditQuestion,
    onRemoveQuestion,
 }: QuestionCardProps) => {
-   const {
-      type,
-      correctAnswer,
-      createdAt,
-      id,
-      options,
-      position,
-      prompt,
-      quizId,
-   } = value;
+   const { type, id, options, prompt } = value;
 
    const [optionValue, setOptionValue] = useState<Option>(DEFAULT_OPTION);
 
@@ -50,6 +58,22 @@ const QuestionCard = ({
    };
 
    const addNewOption = () => {
+      if (options.length >= MAX_OPTION_LENGTH) {
+         addToast({
+            ...TOAST_PROPERTIES,
+            description: 'The maximun number of options has been reached.',
+         });
+         setOptionValue(DEFAULT_OPTION);
+         return;
+      } else if (!Boolean(optionValue.label.trim())) {
+         addToast({
+            ...TOAST_PROPERTIES,
+            description: 'The option field should have value.',
+         });
+         setOptionValue(DEFAULT_OPTION);
+         return;
+      }
+
       const newOption = {
          ...optionValue,
          id: Math.floor(Math.random() * 1000000),
@@ -89,7 +113,7 @@ const QuestionCard = ({
    const selectCorrectAnswer = (optionId: number) => {
       const updatedOption = options.map((opt) => ({
          ...opt,
-         isCorrect: opt.id === optionId,
+         isSelected: opt.id === optionId,
       }));
 
       onChange({
@@ -99,11 +123,19 @@ const QuestionCard = ({
    };
 
    const optionLabel = type === 'mcq' ? 'Option' : 'Possible answer';
-   const typeMap: Record<QuestionType, string> = {
-      mcq: 'Multiple Choice',
-      short: 'Short Answer',
-      code: 'Code',
-   };
+
+   if (['read', 'list'].includes(mode)) {
+      return (
+         <QuestionCardReadOnly
+            title={title}
+            value={value}
+            mode={mode}
+            hasActionButtons={hasActionButtons}
+            onEditQuestion={onEditQuestion}
+            onRemoveQuestion={onRemoveQuestion}
+         />
+      );
+   }
 
    return (
       <div className='flex flex-col gap-3 p-2 rounded-md border-1 border-slate-700 bg-slate-500/10 backdrop-filter backdrop-blur-sm'>
@@ -213,7 +245,7 @@ const QuestionCard = ({
                            <div className='flex items-center gap-5'>
                               <Checkbox
                                  className='border-r-1 border-r-slate-600'
-                                 isSelected={option.isCorrect}
+                                 isSelected={option.isSelected}
                                  onValueChange={() =>
                                     selectCorrectAnswer(option.id)
                                  }>
@@ -241,6 +273,88 @@ const QuestionCard = ({
                               <DeleteSVG />
                            </Button>
                         </div>
+                     </div>
+                  ))}
+               </div>
+            </div>
+         </div>
+      </div>
+   );
+};
+
+const QuestionCardReadOnly = ({
+   title,
+   value,
+   mode,
+   hasActionButtons,
+   onEditQuestion,
+   onRemoveQuestion,
+}: {
+   value: Question;
+   title: string;
+   mode: ViewMode;
+   hasActionButtons?: boolean;
+   onEditQuestion?: (question: Question) => void;
+   onRemoveQuestion?: (questionId: number) => void;
+}) => {
+   const { type, id, options, prompt } = value;
+   const isReadOnly = mode === 'read';
+
+   return (
+      <div className='flex flex-col gap-3 p-2 rounded-md border-1 border-slate-700 bg-slate-500/10 backdrop-filter backdrop-blur-sm'>
+         <div className='flex items-center justify-between p-3 pt-1 border-b-1 border-b-slate-700'>
+            <div className='flex items-center gap-2'>
+               <QuestionSVG />
+               <h3 className='font-semibold'>{title}</h3>
+            </div>
+
+            {hasActionButtons && mode === 'list' && (
+               <div className='flex items-center gap-3'>
+                  <Chip>{typeMap[type]}</Chip>
+                  <div className='flex items-center pl-2 border-l-1 border-l-slate-700'>
+                     <Button
+                        isIconOnly
+                        onPress={() => onEditQuestion?.(value)}
+                        aria-label='Edit question'
+                        variant='light'>
+                        <EditSVG />
+                     </Button>
+
+                     <Button
+                        isIconOnly
+                        onPress={() => onRemoveQuestion?.(id)}
+                        aria-label='Delete question'
+                        variant='light'>
+                        <DeleteSVG />
+                     </Button>
+                  </div>
+               </div>
+            )}
+         </div>
+
+         <div className='flex flex-col gap-2'>
+            <h3 className='py-1 font-semibold text-center'>{prompt}</h3>
+
+            <div className='flex flex-col gap-2 p-2 rounded-md border-1 border-slate-700 bg-slate-500/05 backdrop-filter backdrop-blur-sm'>
+               <div className='flex flex-col gap-1 p-2'>
+                  {options.map((option, idx) => (
+                     <div
+                        className='flex items-center justify-between px-2 rounded-md bg-slate-500/10 backdrop-filter backdrop-blur-sm'
+                        key={option.id}>
+                        {type === 'mcq' ? (
+                           <div className='flex items-center gap-5'>
+                              <Checkbox
+                                 className='border-r-1 border-r-slate-600'
+                                 isSelected={option.isSelected}>
+                                 {numberToCharacter(idx)}
+                              </Checkbox>
+                              <span className='p-2 text-sm'>
+                                 {option.label}
+                              </span>
+                           </div>
+                        ) : (
+                           <span className='p-2 text-sm'>{option.label}</span>
+                        )}
                      </div>
                   ))}
                </div>

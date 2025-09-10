@@ -14,38 +14,6 @@ export const QuestionSVG = () => (
    </svg>
 );
 
-export const EditSVG = () => (
-   <svg
-      xmlns='http://www.w3.org/2000/svg'
-      fill='none'
-      viewBox='0 0 24 24'
-      strokeWidth={1.5}
-      stroke='currentColor'
-      className='size-6'>
-      <path
-         strokeLinecap='round'
-         strokeLinejoin='round'
-         d='m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10'
-      />
-   </svg>
-);
-
-export const DeleteSVG = () => (
-   <svg
-      xmlns='http://www.w3.org/2000/svg'
-      fill='none'
-      viewBox='0 0 24 24'
-      strokeWidth={1.5}
-      stroke='currentColor'
-      className='size-6'>
-      <path
-         strokeLinecap='round'
-         strokeLinejoin='round'
-         d='m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0'
-      />
-   </svg>
-);
-
 export const CloseSVG = () => (
    <svg
       xmlns='http://www.w3.org/2000/svg'
@@ -61,3 +29,118 @@ export const CloseSVG = () => (
       />
    </svg>
 );
+
+export const EyeSVG = () => {
+   return (
+      <svg
+         aria-hidden='true'
+         fill='none'
+         focusable='false'
+         height='1em'
+         role='presentation'
+         viewBox='0 0 20 20'
+         width='1em'>
+         <path
+            d='M12.9833 10C12.9833 11.65 11.65 12.9833 10 12.9833C8.35 12.9833 7.01666 11.65 7.01666 10C7.01666 8.35 8.35 7.01666 10 7.01666C11.65 7.01666 12.9833 8.35 12.9833 10Z'
+            stroke='currentColor'
+            strokeLinecap='round'
+            strokeLinejoin='round'
+            strokeWidth={1.5}
+         />
+         <path
+            d='M9.99999 16.8916C12.9417 16.8916 15.6833 15.1583 17.5917 12.1583C18.3417 10.9833 18.3417 9.00831 17.5917 7.83331C15.6833 4.83331 12.9417 3.09998 9.99999 3.09998C7.05833 3.09998 4.31666 4.83331 2.40833 7.83331C1.65833 9.00831 1.65833 10.9833 2.40833 12.1583C4.31666 15.1583 7.05833 16.8916 9.99999 16.8916Z'
+            stroke='currentColor'
+            strokeLinecap='round'
+            strokeLinejoin='round'
+            strokeWidth={1.5}
+         />
+      </svg>
+   );
+};
+
+export const DeleteSVG = () => {
+   return (
+      <svg
+         aria-hidden='true'
+         fill='none'
+         focusable='false'
+         height='1em'
+         role='presentation'
+         viewBox='0 0 20 20'
+         width='1em'>
+         <path
+            d='M17.5 4.98332C14.725 4.70832 11.9333 4.56665 9.15 4.56665C7.5 4.56665 5.85 4.64998 4.2 4.81665L2.5 4.98332'
+            stroke='currentColor'
+            strokeLinecap='round'
+            strokeLinejoin='round'
+            strokeWidth={1.5}
+         />
+         <path
+            d='M7.08331 4.14169L7.26665 3.05002C7.39998 2.25835 7.49998 1.66669 8.90831 1.66669H11.0916C12.5 1.66669 12.6083 2.29169 12.7333 3.05835L12.9166 4.14169'
+            stroke='currentColor'
+            strokeLinecap='round'
+            strokeLinejoin='round'
+            strokeWidth={1.5}
+         />
+         <path
+            d='M15.7084 7.61664L15.1667 16.0083C15.075 17.3166 15 18.3333 12.675 18.3333H7.32502C5.00002 18.3333 4.92502 17.3166 4.83335 16.0083L4.29169 7.61664'
+            stroke='currentColor'
+            strokeLinecap='round'
+            strokeLinejoin='round'
+            strokeWidth={1.5}
+         />
+         <path
+            d='M8.60834 13.75H11.3833'
+            stroke='currentColor'
+            strokeLinecap='round'
+            strokeLinejoin='round'
+            strokeWidth={1.5}
+         />
+         <path
+            d='M7.91669 10.4167H12.0834'
+            stroke='currentColor'
+            strokeLinecap='round'
+            strokeLinejoin='round'
+            strokeWidth={1.5}
+         />
+      </svg>
+   );
+};
+
+export const EditSVG = () => {
+   return (
+      <svg
+         aria-hidden='true'
+         fill='none'
+         focusable='false'
+         height='1em'
+         role='presentation'
+         viewBox='0 0 20 20'
+         width='1em'>
+         <path
+            d='M11.05 3.00002L4.20835 10.2417C3.95002 10.5167 3.70002 11.0584 3.65002 11.4334L3.34169 14.1334C3.23335 15.1084 3.93335 15.775 4.90002 15.6084L7.58335 15.15C7.95835 15.0834 8.48335 14.8084 8.74168 14.525L15.5834 7.28335C16.7667 6.03335 17.3 4.60835 15.4583 2.86668C13.625 1.14168 12.2334 1.75002 11.05 3.00002Z'
+            stroke='currentColor'
+            strokeLinecap='round'
+            strokeLinejoin='round'
+            strokeMiterlimit={10}
+            strokeWidth={1.5}
+         />
+         <path
+            d='M9.90833 4.20831C10.2667 6.50831 12.1333 8.26665 14.45 8.49998'
+            stroke='currentColor'
+            strokeLinecap='round'
+            strokeLinejoin='round'
+            strokeMiterlimit={10}
+            strokeWidth={1.5}
+         />
+         <path
+            d='M2.5 18.3333H17.5'
+            stroke='currentColor'
+            strokeLinecap='round'
+            strokeLinejoin='round'
+            strokeMiterlimit={10}
+            strokeWidth={1.5}
+         />
+      </svg>
+   );
+};

@@ -36,7 +36,6 @@ export default function RootLayout({
 }) {
    return (
       <html suppressHydrationWarning lang='en'>
-         <head />
          <body
             className={`min-h-screen text-foreground bg-background gradient-background ${quicksand.className}`}>
             <Providers

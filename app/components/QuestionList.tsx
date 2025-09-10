@@ -35,10 +35,23 @@ const QuestionList = ({
                {questions.map((question, index) => (
                   <QuestionCard
                      key={index}
-                     title={`Question ${index + 1}`}
+                     title={`List Question ${index + 1}`}
+                     value={question}
+                     onChange={() => {}}
+                     mode='list'
+                     hasActionButtons
+                     onEditQuestion={onEditQuestion}
+                     onRemoveQuestion={onRemoveQuestion}
+                  />
+               ))}
+               {questions.map((question, index) => (
+                  <QuestionCard
+                     key={index}
+                     title={`Read Question ${index + 1}`}
                      value={question}
                      onChange={() => {}}
                      mode='read'
+                     hasActionButtons
                      onEditQuestion={onEditQuestion}
                      onRemoveQuestion={onRemoveQuestion}
                   />
