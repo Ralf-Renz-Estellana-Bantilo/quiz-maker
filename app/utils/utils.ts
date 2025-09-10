@@ -71,3 +71,7 @@ export function deleteAllCookies(props?: { exclude: string[] | string }): void {
       }
    }
 }
+
+export const convertSecondsToMinutes = (seconds: number) => {
+   return Math.floor(seconds / 60);
+};

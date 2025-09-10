@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, SVGProps } from 'react';
+import { SVGProps } from 'react';
 
 export type IconSvgProps = SVGProps<SVGSVGElement> & {
    size?: number;
@@ -28,7 +28,23 @@ export interface Question {
    options: Option[];
    correctAnswer: string;
    position: number;
-   createdAt: string;
+}
+
+export interface QuestionRaw {
+   id: number;
+   quizId: number;
+   type: QuestionType;
+   prompt: string;
+   options: string[];
+   correctAnswer: string;
+   position: number;
+}
+
+export interface QuizWithQuestions extends Quiz {
+   questions: Question[];
+}
+export interface QuizWithRawQuestions extends Quiz {
+   questions: QuestionRaw[];
 }
 
 export interface Attempt {

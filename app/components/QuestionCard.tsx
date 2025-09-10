@@ -11,6 +11,7 @@ import {
    DropdownMenu,
    DropdownTrigger,
    Input,
+   Textarea,
 } from '@heroui/react';
 import { useState } from 'react';
 import { DeleteSVG, EditSVG, QuestionSVG } from '../icons/icons';
@@ -58,7 +59,7 @@ const QuestionCard = ({
    };
 
    const addNewOption = () => {
-      if (options.length >= MAX_OPTION_LENGTH) {
+      if (type === 'mcq' && options.length >= MAX_OPTION_LENGTH) {
          addToast({
             ...TOAST_PROPERTIES,
             description: 'The maximun number of options has been reached.',
@@ -122,7 +123,7 @@ const QuestionCard = ({
       });
    };
 
-   const optionLabel = type === 'mcq' ? 'Option' : 'Possible answer';
+   const optionLabel = type === 'mcq' ? 'Option' : 'Correct answer';
 
    if (['read', 'list'].includes(mode)) {
       return (
@@ -226,14 +227,17 @@ const QuestionCard = ({
                         isRequired
                      />
                   </div>
-                  <div className='flex'>
-                     <Button
-                        className='h-full'
-                        color='primary'
-                        onPress={addNewOption}>
-                        {optionValue.id !== 0 ? 'Update' : 'Add'}
-                     </Button>
-                  </div>
+
+                  {type === 'mcq' && (
+                     <div className='flex'>
+                        <Button
+                           className='h-full'
+                           color='primary'
+                           onPress={addNewOption}>
+                           {optionValue.id !== 0 ? 'Update' : 'Add'}
+                        </Button>
+                     </div>
+                  )}
                </div>
 
                <div className='flex flex-col gap-1 p-2'>
@@ -297,7 +301,7 @@ const QuestionCardReadOnly = ({
    onEditQuestion?: (question: Question) => void;
    onRemoveQuestion?: (questionId: number) => void;
 }) => {
-   const { type, id, options, prompt } = value;
+   const { type, id, options, prompt, correctAnswer } = value;
    const isReadOnly = mode === 'read';
 
    return (
@@ -336,28 +340,50 @@ const QuestionCardReadOnly = ({
             <h3 className='py-1 font-semibold text-center'>{prompt}</h3>
 
             <div className='flex flex-col gap-2 p-2 rounded-md border-1 border-slate-700 bg-slate-500/05 backdrop-filter backdrop-blur-sm'>
-               <div className='flex flex-col gap-1 p-2'>
-                  {options.map((option, idx) => (
-                     <div
-                        className='flex items-center justify-between px-2 rounded-md bg-slate-500/10 backdrop-filter backdrop-blur-sm'
-                        key={option.id}>
-                        {type === 'mcq' ? (
-                           <div className='flex items-center gap-5'>
-                              <Checkbox
-                                 className='border-r-1 border-r-slate-600'
-                                 isSelected={option.isSelected}>
-                                 {numberToCharacter(idx)}
-                              </Checkbox>
+               {type === 'mcq' && (
+                  <div className='flex flex-col gap-1 p-2'>
+                     {options.map((option, idx) => (
+                        <div
+                           className='flex items-center justify-between px-2 rounded-md bg-slate-500/10 backdrop-filter backdrop-blur-sm'
+                           key={option.id}>
+                           {type === 'mcq' ? (
+                              <div className='flex items-center gap-5'>
+                                 <Checkbox
+                                    className='border-r-1 border-r-slate-600'
+                                    isSelected={option.isSelected}>
+                                    {numberToCharacter(idx)}
+                                 </Checkbox>
+                                 <span className='p-2 text-sm'>
+                                    {option.label}
+                                 </span>
+                              </div>
+                           ) : (
                               <span className='p-2 text-sm'>
                                  {option.label}
                               </span>
-                           </div>
-                        ) : (
-                           <span className='p-2 text-sm'>{option.label}</span>
-                        )}
-                     </div>
-                  ))}
-               </div>
+                           )}
+                        </div>
+                     ))}
+                  </div>
+               )}
+
+               {type === 'short' && (
+                  <span className='flex gap-3'>
+                     <p>Answer:</p>{' '}
+                     <strong className='text-primary'>
+                        {correctAnswer}
+                     </strong>{' '}
+                  </span>
+               )}
+
+               {type === 'code' && (
+                  <Textarea
+                     label='Code Snippet'
+                     variant='bordered'
+                     maxRows={70}
+                     placeholder='Enter your code here...'
+                  />
+               )}
             </div>
          </div>
       </div>
