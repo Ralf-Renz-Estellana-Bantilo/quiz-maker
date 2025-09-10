@@ -1,24 +1,12 @@
 'use client';
 
-import QuestionCard from '@/app/components/QuestionCard';
 import QuestionForm from '@/app/components/QuestionForm';
 import QuestionList from '@/app/components/QuestionList';
-import Questionnaire from '@/app/components/Questionnaire';
 import { ClientContext } from '@/app/context/context';
-import { DeleteSVG, EditSVG, QuestionSVG } from '@/app/icons/icons';
-import { ChangeHandler, Question } from '@/types';
-import {
-   Button,
-   Checkbox,
-   Chip,
-   Dropdown,
-   DropdownItem,
-   DropdownMenu,
-   DropdownTrigger,
-   Input,
-   ScrollShadow,
-} from '@heroui/react';
-import { useContext, useState } from 'react';
+import { getQuizWithQuestionsMeta } from '@/app/controller/quizzes';
+import { ChangeHandler, Option, Question, QuizWithQuestions } from '@/types';
+import { useParams } from 'next/navigation';
+import { useContext, useEffect, useState } from 'react';
 
 const QUESTION_INITIAL_VALUE: Question = {
    id: 0,
@@ -28,7 +16,6 @@ const QUESTION_INITIAL_VALUE: Question = {
    options: [],
    correctAnswer: '',
    position: 1,
-   createdAt: new Date(Date.now()).toDateString(),
 };
 
 export default function CreateQuizPage() {
@@ -38,7 +25,12 @@ export default function CreateQuizPage() {
       removeQuestionFromList,
       editQuestionFromList,
    } = useContext(ClientContext);
+
    const [form, setForm] = useState<Question>(QUESTION_INITIAL_VALUE);
+   const [quiz, setQuiz] = useState<QuizWithQuestions>();
+
+   const params = useParams();
+   const { id: quizId } = params;
 
    const onChange = ({ type, value }: ChangeHandler) => {
       if (type === 'option') {
@@ -76,16 +68,65 @@ export default function CreateQuizPage() {
       removeQuestionFromList(questionId);
    };
 
+   const getQuizWithQuestions = async () => {
+      const response = await getQuizWithQuestionsMeta(Number(quizId));
+
+      let refactoredQuestion = response.questions.map((question) => {
+         const { type, options, correctAnswer } = question;
+
+         if (type === 'mcq') {
+            const refactoredOption: Option[] = Array.from(
+               options,
+               (option, index) => {
+                  return {
+                     id: Math.floor(Math.random() * 1000000),
+                     isSelected: Number(correctAnswer) === index,
+                     label: option,
+                  };
+               }
+            );
+
+            return {
+               ...question,
+               options: refactoredOption,
+            };
+         } else {
+            return question;
+         }
+      });
+
+      const refactoredQuiz: QuizWithQuestions = {
+         ...response,
+         questions: refactoredQuestion as unknown as Question[],
+      };
+
+      console.log({
+         response,
+         refactoredQuiz,
+      });
+
+      setQuiz(refactoredQuiz);
+   };
+
+   useEffect(() => {
+      (async () => await getQuizWithQuestions())();
+   }, []);
+
+   if (!quiz) {
+      return null;
+   }
+
    return (
       <div className='flex w-[90vw] h-[100dvh] gap-5 py-3'>
          <QuestionForm
+            quiz={quiz}
             form={form}
             onAddQuestion={addQuestion}
             onChange={onChange}
          />
 
          <QuestionList
-            questions={questions}
+            questions={quiz.questions}
             onEditQuestion={editQuestion}
             onRemoveQuestion={removeQuestion}
          />

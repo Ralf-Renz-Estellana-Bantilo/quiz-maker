@@ -11,30 +11,42 @@ import { ClientContext } from '../context/context';
 import { Quiz } from '@/types';
 import { setCookie } from '../utils/utils';
 import { DEFAULT_QUIZ_FORM_VALUE } from '../utils/constants';
+import { fetchData } from '../controller/controller';
+import { createQuizMeta } from '../controller/quizzes';
 
 const WelcomePage = () => {
    const router = useRouter();
    const { addQuizToList } = useContext(ClientContext);
    const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
-   const createQuiz = (form: Quiz) => {
-      const quizId = Math.floor(Math.random() * 1000000);
-      const newQuiz: Quiz = {
-         ...form,
-         id: quizId,
-         createdAt: new Date(Date.now()).toString(),
-         timeLimitSeconds: form.timeLimitSeconds
-            ? form.timeLimitSeconds * 60
-            : null,
-      };
+   const createQuiz = async (form: Quiz) => {
+      try {
+         const newQuiz: Quiz = {
+            ...form,
+            timeLimitSeconds: form.timeLimitSeconds
+               ? form.timeLimitSeconds * 60
+               : null,
+         };
 
-      setCookie('quizId', quizId.toString());
-      addQuizToList(newQuiz);
-      router.push('quizzes/create');
+         const response = await createQuizMeta(newQuiz);
+
+         console.log({ response });
+
+         setCookie('quizId', `${response.id}`);
+         addQuizToList(newQuiz);
+         router.push(`quizzes/create/${response.id}`);
+      } catch (error) {
+         console.log(error);
+      }
    };
 
    const startQuiz = () => {
-      router.push('quizzes');
+      router.push('quizzes/list');
+   };
+
+   const fetchRequest = async () => {
+      const data = await fetchData('http://localhost:4000/quizzes');
+      console.log({ data });
    };
 
    return (
@@ -81,6 +93,13 @@ const WelcomePage = () => {
                      Start Quiz
                   </Button>
                </div>
+               <Button
+                  className='flex-grow'
+                  color='primary'
+                  variant='bordered'
+                  onPress={fetchRequest}>
+                  Fetch
+               </Button>
             </div>
          </div>
       </>

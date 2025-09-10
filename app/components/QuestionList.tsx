@@ -1,10 +1,7 @@
 'use client';
 
-import { ScrollShadow } from '@heroui/scroll-shadow';
-import React, { useContext } from 'react';
-import Questionnaire from './Questionnaire';
-import { ClientContext } from '../context/context';
 import { Question } from '@/types';
+import { ScrollShadow } from '@heroui/scroll-shadow';
 import QuestionCard from './QuestionCard';
 
 const QuestionList = ({
@@ -31,7 +28,7 @@ const QuestionList = ({
          <ScrollShadow
             hideScrollBar
             className='flex flex-col gap-2 overflow-y-scroll max-h-[93vh] pb-10'>
-            <div className='flex flex-col gap-3'>
+            <div className='flex flex-col gap-8'>
                {questions.map((question, index) => (
                   <QuestionCard
                      key={index}

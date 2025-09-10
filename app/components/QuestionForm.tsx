@@ -1,22 +1,29 @@
 'use client';
 
-import { ChangeHandler, Question, Quiz } from '@/types';
+import { ChangeHandler, Question, Quiz, QuizWithQuestions } from '@/types';
 import { Button } from '@heroui/button';
 import { addToast, Chip, ScrollShadow, useDisclosure } from '@heroui/react';
 import { useContext, useEffect, useState } from 'react';
 import { ClientContext, TOAST_PROPERTIES } from '../context/context';
 import { EditSVG } from '../icons/icons';
 import { DEFAULT_QUIZ_FORM_VALUE } from '../utils/constants';
-import { deleteAllCookies, getCookie } from '../utils/utils';
+import {
+   convertSecondsToMinutes,
+   deleteAllCookies,
+   getCookie,
+} from '../utils/utils';
 import CreateQuizModal from './modals/CreateQuizModal';
 import QuestionCard from './QuestionCard';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { getQuizWithQuestionsMeta } from '../controller/quizzes';
 
 const QuestionForm = ({
+   quiz,
    form,
    onAddQuestion,
    onChange,
 }: {
+   quiz: QuizWithQuestions;
    form: Question;
    onChange: ({ type, value }: ChangeHandler) => void;
    onAddQuestion: () => void;
@@ -35,7 +42,8 @@ const QuestionForm = ({
       DEFAULT_QUIZ_FORM_VALUE
    );
 
-   const quizIdFromCookie = getCookie<number>('quizId', 0);
+   const params = useParams();
+   const { id: quizId } = params;
 
    const updateQuiz = (form: Quiz) => {
       const updatedQuiz: Quiz = {
@@ -50,9 +58,9 @@ const QuestionForm = ({
    };
 
    const cancelQuizCreation = () => {
-      removeQuizFromList(quizIdFromCookie);
+      removeQuizFromList(Number(quizId));
       const allQuestionsRelatedToQuiz = questions.filter(
-         (q) => q.quizId === quizIdFromCookie
+         (q) => q.quizId === Number(quizId)
       );
 
       allQuestionsRelatedToQuiz.forEach(({ id }) => {
@@ -98,11 +106,13 @@ const QuestionForm = ({
       onAddQuestion();
    };
 
+   const getQuizWithQuestions = async () => {
+      const response = await getQuizWithQuestionsMeta(Number(quizId));
+      setCurrentQuiz(response);
+   };
+
    useEffect(() => {
-      const quiz = quizzes.find((q) => q.id === quizIdFromCookie);
-      if (quiz) {
-         setCurrentQuiz(quiz);
-      }
+      (async () => await getQuizWithQuestions())();
    }, []);
 
    return (
@@ -112,13 +122,13 @@ const QuestionForm = ({
             isOpen={isOpen}
             onOpenChange={onOpenChange}
             onContinue={updateQuiz}
-            initialValue={currentQuiz}
+            initialValue={quiz}
          />
          <div className='flex flex-col gap-3 w-[45vw] border-1 border-slate-700 rounded-md p-3'>
             <div className='flex items-center justify-between pb-3 border-b-1 border-b-slate-700'>
                <div className='flex flex-col gap-2 max-w-[80%]'>
                   <div className='flex items-center gap-3'>
-                     <h3 className='text-xl font-bold'>{currentQuiz.title}</h3>
+                     <h3 className='text-xl font-bold'>{quiz.title}</h3>
                      <Button
                         isIconOnly
                         onPress={onOpen}
@@ -127,16 +137,20 @@ const QuestionForm = ({
                         <EditSVG />
                      </Button>
                   </div>
-                  <p>{currentQuiz.description}</p>
-                  {Boolean(currentQuiz.timeLimitSeconds) && (
+                  <p>{quiz.description}</p>
+                  {Boolean(quiz.timeLimitSeconds) && (
                      <Chip>
-                        Time limit: {currentQuiz.timeLimitSeconds} mins
+                        Time limit:{' '}
+                        {convertSecondsToMinutes(Number(quiz.timeLimitSeconds))}{' '}
+                        mins
                      </Chip>
                   )}
                </div>
 
                <div className='flex flex-col items-center gap-3'>
-                  <Chip>Unpublished</Chip>
+                  <Chip color={quiz.isPublished ? 'success' : 'default'}>
+                     {quiz.isPublished ? 'Published' : 'Unpublished'}
+                  </Chip>
                   <div className='flex gap-2'>
                      <Button
                         className='flex-grow'
