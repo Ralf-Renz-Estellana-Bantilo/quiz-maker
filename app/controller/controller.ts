@@ -12,7 +12,10 @@ export const fetchData = async <T>(url: string): Promise<T> => {
    return result.data;
 };
 
-export const inserData = async <T>(url: string, payload: T): Promise<T> => {
+export const inserData = async <T, K = T>(
+   url: string,
+   payload?: K
+): Promise<T> => {
    const result = await axios.post(url, payload);
 
    return result.data;

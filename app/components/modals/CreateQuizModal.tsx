@@ -40,6 +40,17 @@ const CreateQuizModal = ({
       onClose();
    };
 
+   useEffect(() => {
+      const timeLimitSeconds =
+         initialValue.id !== 0
+            ? Number(initialValue.timeLimitSeconds) / 60
+            : initialValue.timeLimitSeconds;
+
+      console.log({ timeLimitSeconds });
+
+      setForm({ ...initialValue, timeLimitSeconds });
+   }, [initialValue]);
+
    return (
       <Modal
          isDismissable={false}
@@ -57,21 +68,21 @@ const CreateQuizModal = ({
                         label='Title'
                         isRequired
                         id='title'
-                        value={form.title}
+                        value={form.title ?? ''}
                         onChange={onChangeInput}
                      />
                      <Input
                         label='Description'
                         id='description'
                         isRequired
-                        value={form.description}
+                        value={form.description ?? ''}
                         onChange={onChangeInput}
                      />
                      <Input
                         label='Time limit (mins)'
                         id='timeLimitSeconds'
                         type='number'
-                        value={form.timeLimitSeconds?.toString()}
+                        value={form.timeLimitSeconds?.toString() ?? ''}
                         onChange={onChangeInput}
                      />
                   </ModalBody>

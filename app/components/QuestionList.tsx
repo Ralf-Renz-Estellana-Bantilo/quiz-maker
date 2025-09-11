@@ -27,27 +27,15 @@ const QuestionList = ({
 
          <ScrollShadow
             hideScrollBar
-            className='flex flex-col gap-2 overflow-y-scroll max-h-[93vh] pb-10'>
+            className='flex flex-col h-full gap-2 pb-10 overflow-y-auto'>
             <div className='flex flex-col gap-8'>
                {questions.map((question, index) => (
                   <QuestionCard
                      key={index}
-                     title={`List Question ${index + 1}`}
+                     title={`Question ${index + 1}`}
                      value={question}
                      onChange={() => {}}
                      mode='list'
-                     hasActionButtons
-                     onEditQuestion={onEditQuestion}
-                     onRemoveQuestion={onRemoveQuestion}
-                  />
-               ))}
-               {questions.map((question, index) => (
-                  <QuestionCard
-                     key={index}
-                     title={`Read Question ${index + 1}`}
-                     value={question}
-                     onChange={() => {}}
-                     mode='read'
                      hasActionButtons
                      onEditQuestion={onEditQuestion}
                      onRemoveQuestion={onRemoveQuestion}

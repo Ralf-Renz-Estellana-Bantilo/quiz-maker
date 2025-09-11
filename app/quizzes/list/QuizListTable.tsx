@@ -1,8 +1,9 @@
 'use client';
 
-import { CodeSVG, DeleteSVG, EditSVG, EyeSVG } from '@/app/icons/icons';
+import { CodeSVG, EditSVG } from '@/app/icons/icons';
 import { Quiz } from '@/types';
 import {
+   Button,
    Chip,
    Table,
    TableBody,
@@ -12,7 +13,8 @@ import {
    TableRow,
    Tooltip,
 } from '@heroui/react';
-import React, { useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { useCallback } from 'react';
 
 const columns = [
    { name: 'TITLE', uid: 'title' },
@@ -36,6 +38,7 @@ const QuizListTable = ({
    onSelect: (quizId: number) => void;
    onEdit: (quizId: number) => void;
 }) => {
+   const router = useRouter();
    const selectQuiz = useCallback(
       (quizId: number) => {
          onSelect(quizId);
@@ -51,8 +54,6 @@ const QuizListTable = ({
 
    const renderCell = useCallback((quiz: Quiz, columnKey: any) => {
       const cellValue = quiz[columnKey as keyof Quiz];
-
-      console.log({ quiz, cellValue, columnKey });
 
       switch (columnKey) {
          case 'title':
@@ -78,21 +79,32 @@ const QuizListTable = ({
             );
          case 'actions':
             return (
-               <div className='relative flex items-center gap-2'>
+               <div className='relative flex items-center'>
                   <Tooltip content='Take quiz'>
-                     <span
-                        className='text-lg cursor-pointer text-default-400 active:opacity-50'
-                        onClick={() => selectQuiz(quiz.id)}>
+                     <Button
+                        isDisabled={!quiz.isPublished}
+                        isIconOnly
+                        size='sm'
+                        onPress={() => {
+                           if (quiz.isPublished) {
+                              selectQuiz(quiz.id);
+                           }
+                        }}
+                        aria-label='Take quiz'
+                        variant='light'>
                         <CodeSVG />
-                     </span>
+                     </Button>
                   </Tooltip>
 
                   <Tooltip content='Edit'>
-                     <span
-                        className='text-lg cursor-pointer text-default-400 active:opacity-50'
-                        onClick={() => editQuiz(quiz.id)}>
+                     <Button
+                        isIconOnly
+                        size='sm'
+                        onPress={() => editQuiz(quiz.id)}
+                        aria-label='Edit'
+                        variant='light'>
                         <EditSVG />
-                     </span>
+                     </Button>
                   </Tooltip>
                </div>
             );
@@ -103,8 +115,16 @@ const QuizListTable = ({
 
    return (
       <div className='flex flex-col gap-2'>
-         <h3 className='text-xl font-bold text-center'>Quiz List</h3>
-         <Table aria-label='Example table with custom cells'>
+         <div className='flex items-center justify-between'>
+            <h3 className='text-xl font-bold text-center'>Quiz List</h3>
+            <Button
+               color='primary'
+               variant='bordered'
+               onPress={() => router.push('/')}>
+               Back
+            </Button>
+         </div>
+         <Table aria-label='Example table with custom cells' removeWrapper>
             <TableHeader columns={columns}>
                {(column) => (
                   <TableColumn

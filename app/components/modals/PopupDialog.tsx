@@ -3,14 +3,13 @@
 import { ClientContext } from '@/app/context/context';
 import {
    Button,
-   Input,
    Modal,
    ModalBody,
    ModalContent,
    ModalFooter,
    ModalHeader,
 } from '@heroui/react';
-import React, { ReactNode, useContext } from 'react';
+import { ReactNode, useContext } from 'react';
 
 interface PopupDialogProps {
    title: string;

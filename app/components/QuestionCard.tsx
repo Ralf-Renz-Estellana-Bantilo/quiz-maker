@@ -14,9 +14,10 @@ import {
    Textarea,
 } from '@heroui/react';
 import { useState } from 'react';
+import { TOAST_PROPERTIES } from '../context/context';
 import { DeleteSVG, EditSVG, QuestionSVG } from '../icons/icons';
 import { numberToCharacter } from '../utils/utils';
-import { TOAST_PROPERTIES } from '../context/context';
+import { MCQComponent, ShortQComponent } from './Questionnaire';
 
 type ViewMode = 'read' | 'edit' | 'create' | 'list';
 interface QuestionCardProps {
@@ -50,7 +51,9 @@ const QuestionCard = ({
    onEditQuestion,
    onRemoveQuestion,
 }: QuestionCardProps) => {
-   const { type, id, options, prompt } = value;
+   const { type, id, prompt, correctAnswer } = value;
+
+   const options = value.options ?? [];
 
    const [optionValue, setOptionValue] = useState<Option>(DEFAULT_OPTION);
 
@@ -211,18 +214,68 @@ const QuestionCard = ({
                isRequired
                variant='bordered'
             />
+
+            {type === 'mcq' && (
+               <MCQComponent
+                  options={options}
+                  onChange={(value) =>
+                     handleChange({
+                        type: 'option',
+                        value: value,
+                     })
+                  }
+                  onSelectCorrectAnswer={(value) =>
+                     handleChange({
+                        type: 'correctAnswer',
+                        value: `${value}`,
+                     })
+                  }
+               />
+            )}
+
+            {type === 'short' && (
+               <ShortQComponent
+                  value={correctAnswer}
+                  onChange={(value) =>
+                     handleChange({
+                        type: 'correctAnswer',
+                        value: value,
+                     })
+                  }
+               />
+            )}
+
+            {/* <Input
+               label='Question'
+               value={prompt}
+               onChange={(e) =>
+                  handleChange({
+                     type: 'prompt',
+                     value: e.target.value,
+                  })
+               }
+               isRequired
+               variant='bordered'
+            />
             <div className='flex flex-col gap-2 p-2 rounded-md border-1 border-slate-700 bg-slate-500/05 backdrop-filter backdrop-blur-sm'>
                <div className='flex gap-2'>
                   <div className='flex-grow'>
                      <Input
                         value={optionValue.label}
                         label={optionLabel}
-                        onChange={(e) =>
-                           setOptionValue((prev) => ({
-                              ...prev,
-                              label: e.target.value,
-                           }))
-                        }
+                        onChange={(e) => {
+                           if (type === 'mcq') {
+                              setOptionValue((prev) => ({
+                                 ...prev,
+                                 label: e.target.value,
+                              }));
+                           } else if (type === 'short') {
+                              handleChange({
+                                 type: 'correctAnswer',
+                                 value: e.target.value,
+                              });
+                           }
+                        }}
                         variant='bordered'
                         isRequired
                      />
@@ -280,7 +333,7 @@ const QuestionCard = ({
                      </div>
                   ))}
                </div>
-            </div>
+            </div> */}
          </div>
       </div>
    );
@@ -301,7 +354,9 @@ const QuestionCardReadOnly = ({
    onEditQuestion?: (question: Question) => void;
    onRemoveQuestion?: (questionId: number) => void;
 }) => {
-   const { type, id, options, prompt, correctAnswer } = value;
+   const { type, id, prompt, correctAnswer } = value;
+
+   const options = value.options ?? [];
    const isReadOnly = mode === 'read';
 
    return (
@@ -345,7 +400,7 @@ const QuestionCardReadOnly = ({
                      {options.map((option, idx) => (
                         <div
                            className='flex items-center justify-between px-2 rounded-md bg-slate-500/10 backdrop-filter backdrop-blur-sm'
-                           key={option.id}>
+                           key={option.id ?? idx}>
                            {type === 'mcq' ? (
                               <div className='flex items-center gap-5'>
                                  <Checkbox

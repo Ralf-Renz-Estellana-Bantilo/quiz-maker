@@ -16,9 +16,6 @@ export const createQuizMeta = async (payload: Quiz): Promise<Quiz> => {
    return inserData<Quiz>(QUIZZES_URL, payload);
 };
 
-export const updateQuizMeta = async (
-   quizId: number,
-   payload: Partial<Quiz>
-): Promise<Quiz> => {
-   return patchData<Quiz>(`${QUIZZES_URL}/${quizId}`, payload);
+export const updateQuizMeta = async (payload: Partial<Quiz>): Promise<Quiz> => {
+   return patchData<Quiz>(`${QUIZZES_URL}/${payload.id}`, payload);
 };

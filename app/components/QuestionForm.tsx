@@ -3,81 +3,63 @@
 import { ChangeHandler, Question, Quiz, QuizWithQuestions } from '@/types';
 import { Button } from '@heroui/button';
 import { addToast, Chip, ScrollShadow, useDisclosure } from '@heroui/react';
-import { useContext, useEffect, useState } from 'react';
-import { ClientContext, TOAST_PROPERTIES } from '../context/context';
+import { useRouter } from 'next/navigation';
+import { TOAST_PROPERTIES } from '../context/context';
+import { updateQuizMeta } from '../controller/quizzes';
 import { EditSVG } from '../icons/icons';
-import { DEFAULT_QUIZ_FORM_VALUE } from '../utils/constants';
-import {
-   convertSecondsToMinutes,
-   deleteAllCookies,
-   getCookie,
-} from '../utils/utils';
+import { convertSecondsToMinutes, deleteAllCookies } from '../utils/utils';
 import CreateQuizModal from './modals/CreateQuizModal';
 import QuestionCard from './QuestionCard';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { getQuizWithQuestionsMeta } from '../controller/quizzes';
 
 const QuestionForm = ({
    quiz,
    form,
    onAddQuestion,
    onChange,
+   handleAfterUpdateQuiz,
 }: {
    quiz: QuizWithQuestions;
    form: Question;
    onChange: ({ type, value }: ChangeHandler) => void;
-   onAddQuestion: () => void;
+   onAddQuestion: (form: Question) => void;
+   handleAfterUpdateQuiz: (quiz: Quiz) => void;
 }) => {
    const router = useRouter();
-   const {
-      quizzes,
-      questions,
-      editQuizFromList,
-      removeQuizFromList,
-      removeQuestionFromList,
-   } = useContext(ClientContext);
    const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
-   const [currentQuiz, setCurrentQuiz] = useState<Quiz>(
-      DEFAULT_QUIZ_FORM_VALUE
-   );
-
-   const params = useParams();
-   const { id: quizId } = params;
-
-   const updateQuiz = (form: Quiz) => {
+   const updateQuiz = async (form: Quiz) => {
       const updatedQuiz: Quiz = {
          ...form,
          timeLimitSeconds:
             form.timeLimitSeconds && form.timeLimitSeconds != 0
-               ? Number(form.timeLimitSeconds)
+               ? Number(form.timeLimitSeconds) * 60
                : null,
       };
-      setCurrentQuiz(updatedQuiz);
-      editQuizFromList(updatedQuiz);
+
+      console.log({
+         form,
+         updatedQuiz,
+      });
+
+      handleAfterUpdateQuiz(updatedQuiz);
    };
 
    const cancelQuizCreation = () => {
-      removeQuizFromList(Number(quizId));
-      const allQuestionsRelatedToQuiz = questions.filter(
-         (q) => q.quizId === Number(quizId)
-      );
-
-      allQuestionsRelatedToQuiz.forEach(({ id }) => {
-         removeQuestionFromList(id);
-      });
-
       deleteAllCookies();
       router.push('/');
    };
 
-   const saveQuiz = () => {
+   const saveQuiz = async () => {
+      if (quiz.questions.length === 0) return;
+
+      const { questions: _, ...restValue } = quiz;
       const updatedQuiz: Quiz = {
-         ...currentQuiz,
+         ...restValue,
          isPublished: true,
       };
 
-      editQuizFromList(updatedQuiz);
+      await updateQuizMeta(updatedQuiz);
+
       deleteAllCookies();
       router.push('/quizzes/list');
    };
@@ -90,7 +72,8 @@ const QuestionForm = ({
          });
          return;
       } else if (form.type === 'mcq') {
-         const hasCorrectValue = form.options
+         const options = form.options ?? [];
+         const hasCorrectValue = options
             .map((opt) => opt.isSelected)
             .includes(true);
 
@@ -103,17 +86,8 @@ const QuestionForm = ({
          }
       }
 
-      onAddQuestion();
+      onAddQuestion(form);
    };
-
-   const getQuizWithQuestions = async () => {
-      const response = await getQuizWithQuestionsMeta(Number(quizId));
-      setCurrentQuiz(response);
-   };
-
-   useEffect(() => {
-      (async () => await getQuizWithQuestions())();
-   }, []);
 
    return (
       <>
@@ -162,6 +136,7 @@ const QuestionForm = ({
                      <Button
                         className='flex-grow'
                         onPress={saveQuiz}
+                        isDisabled={quiz.questions.length === 0}
                         color='primary'>
                         Save
                      </Button>

@@ -38,3 +38,8 @@ pnpm-lock.yaml
 yarn.lock
 package-lock.json
 bun.lockb
+
+# server-related files
+app/data.sqlite-shm
+app/data.sqlite-wal
+app/data.sqlite

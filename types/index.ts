@@ -4,6 +4,12 @@ export type IconSvgProps = SVGProps<SVGSVGElement> & {
    size?: number;
 };
 
+export interface Context {
+   isPopupOpen: boolean;
+   onPopupOpen: () => void;
+   onPopupOpenChange: () => void;
+}
+
 export interface Quiz {
    id: number;
    title: string;
@@ -25,7 +31,7 @@ export interface Question {
    quizId: number;
    type: QuestionType;
    prompt: string;
-   options: Option[];
+   options?: Option[];
    correctAnswer: string;
    position: number;
 }
@@ -43,6 +49,7 @@ export interface QuestionRaw {
 export interface QuizWithQuestions extends Quiz {
    questions: Question[];
 }
+
 export interface QuizWithRawQuestions extends Quiz {
    questions: QuestionRaw[];
 }
@@ -68,6 +75,17 @@ export interface AttemptEvent {
    timestamp: string;
 }
 
+interface ResultDetail {
+   questionId: number;
+   correct: boolean;
+   expected: string;
+}
+
+export interface Result {
+   details: ResultDetail[];
+   score: number;
+}
+
 export type ChangeHandler =
    | {
         type: 'prompt';
@@ -75,6 +93,10 @@ export type ChangeHandler =
      }
    | {
         type: 'type';
+        value: string;
+     }
+   | {
+        type: 'correctAnswer';
         value: string;
      }
    | {

@@ -1,12 +1,12 @@
 import { Question } from '@/types';
-import { deleteData, fetchData, inserData, patchData } from './controller';
-import { QUESTIONS_URL } from '../utils/urls';
+import { QUESTIONS_URL, QUIZZES_URL } from '../utils/urls';
+import { deleteData, inserData, patchData } from './controller';
 
 export const createQuestionMeta = async (
    quizId: number,
    payload: Question
 ): Promise<Question> => {
-   return inserData<Question>(`${QUESTIONS_URL}/${quizId}/questions`, payload);
+   return inserData<Question>(`${QUIZZES_URL}/${quizId}/questions`, payload);
 };
 
 export const updateQuestionMeta = async (

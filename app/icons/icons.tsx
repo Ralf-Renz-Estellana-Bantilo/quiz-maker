@@ -153,11 +153,29 @@ export const CodeSVG = () => {
          viewBox='0 0 24 24'
          strokeWidth={1.5}
          stroke='currentColor'
-         className='size-6'>
+         className='size-4'>
          <path
             strokeLinecap='round'
             strokeLinejoin='round'
             d='M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5'
+         />
+      </svg>
+   );
+};
+
+export const ClockSVG = () => {
+   return (
+      <svg
+         xmlns='http://www.w3.org/2000/svg'
+         fill='none'
+         viewBox='0 0 24 24'
+         strokeWidth={1.5}
+         stroke='currentColor'
+         className='size-4'>
+         <path
+            strokeLinecap='round'
+            strokeLinejoin='round'
+            d='M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z'
          />
       </svg>
    );

@@ -1,61 +1,42 @@
 'use client';
 
-import { Quiz } from '@/types';
-import QuizListTable from './QuizListTable';
-import { useEffect, useState } from 'react';
 import { getQuizzesMeta } from '@/app/controller/quizzes';
-import { fetchData } from '@/app/controller/controller';
+import { deleteAllCookies, setCookie } from '@/app/utils/utils';
+import { Quiz } from '@/types';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import QuizListTable from './QuizListTable';
+import { useSuspension } from '@/app/hook/useSuspension';
 
-export const quizzes: Quiz[] = [
-   {
-      id: 1,
-      title: 'General Knowledge Quiz',
-      description:
-         'A fun quiz to test your general knowledge across various topics.',
-      timeLimitSeconds: 600, // 10 minutes
-      isPublished: true,
-      createdAt: new Date().toISOString(),
-   },
-   {
-      id: 2,
-      title: 'JavaScript Basics',
-      description: 'Check your understanding of JavaScript fundamentals.',
-      timeLimitSeconds: 900, // 15 minutes
-      isPublished: false,
-      createdAt: new Date().toISOString(),
-   },
-   {
-      id: 3,
-      title: 'World History Challenge',
-      description: 'A quiz to test your knowledge of major historical events.',
-      timeLimitSeconds: null, // no time limit
-      isPublished: true,
-      createdAt: new Date().toISOString(),
-   },
-];
-
-export default function CreateQuizPage() {
+export default function ListQuizPage() {
    const router = useRouter();
+   const { execute } = useSuspension();
 
    const [quizzes, setQuizzes] = useState<Quiz[]>([]);
 
-   const getQuizzes = async () => {
-      const response = await getQuizzesMeta();
+   const getQuizzes = () => {
+      execute(async () => {
+         const response = await getQuizzesMeta();
 
-      setQuizzes(response);
+         deleteAllCookies();
+         setQuizzes(response);
+      });
    };
 
-   const onSelectQuiz = (quizId: number) => {
-      router.push(`/quizzes/exam/${quizId}`);
+   const onSelectQuiz = async (quizId: number) => {
+      setCookie('quizId', `${quizId}`);
+
+      router.push(`/quizzes/exam`);
    };
 
    const onEditQuiz = (quizId: number) => {
-      router.push(`/quizzes/create/${quizId}`);
+      setCookie('quizId', `${quizId}`);
+
+      router.push(`/quizzes/create`);
    };
 
    useEffect(() => {
-      (async () => await getQuizzes())();
+      getQuizzes();
    }, []);
 
    return (
