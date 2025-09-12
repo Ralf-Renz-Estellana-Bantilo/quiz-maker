@@ -125,7 +125,7 @@ export default function ListQuizPage() {
    }, []);
 
    return (
-      <div className='flex flex-col w-full h-[100dvh] gap-1 py-3'>
+      <div className='flex flex-col w-[70vw] h-[100dvh] gap-1 py-3'>
          <div className='flex flex-col gap-2'>
             <div className='flex items-center justify-between'>
                <h3 className='text-xl font-bold text-center'>Quiz List</h3>

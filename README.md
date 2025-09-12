@@ -1,53 +1,100 @@
-# Next.js & HeroUI Template
+# Quiz Maker Application
 
-This is a template for creating applications using Next.js 14 (app directory) and HeroUI (v2).
+A Quiz Maker Application developed using **Next.js**. This application allows users to create, manage, and take quizzes easily.
 
-[Try it on CodeSandbox](https://githubbox.com/heroui-inc/heroui/next-app-template)
+---
 
-## Technologies Used
+## Project Structure
 
-- [Next.js 14](https://nextjs.org/docs/getting-started)
-- [HeroUI v2](https://heroui.com/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Tailwind Variants](https://tailwind-variants.org)
-- [TypeScript](https://www.typescriptlang.org/)
-- [Framer Motion](https://www.framer.com/motion/)
-- [next-themes](https://github.com/pacocoursey/next-themes)
+The project consists of **two servers**:
 
-## How to Use
+1. **Client Server** – Handles the front-end interface.
+2. **Database Server** – Handles backend data and API requests.
 
-### Use the template with create-next-app
+---
 
-To create a new project based on this template using `create-next-app`, run the following command:
+## Getting Started
+
+### Prerequisites
+
+- Node.js installed on your system
+- npm (Node Package Manager)
+
+### Installation
+
+Open Command Line (CMD) and follow these instructions:
+
+1. **Clone the repository**:
 
 ```bash
-npx create-next-app -e https://github.com/heroui-inc/next-app-template
+git clone https://github.com/Ralf-Renz-Estellana-Bantilo/quiz-maker.git
 ```
 
-### Install dependencies
+2. **Navigate to the folder**:
 
-You can use one of them `npm`, `yarn`, `pnpm`, `bun`, Example using `npm`:
+```bash
+cd quiz-maker
+```
+
+3. **Install dependencies**:
 
 ```bash
 npm install
 ```
 
-### Run the development server
+4. **Open VSCode (Optional)**:
+
+```bash
+code .
+```
+
+### Running the Application
+
+1. **Initialize the Database Schema**
+
+Before starting the servers, seed the database with initial data:
+
+```bash
+npm run seed
+```
+
+2. **Start the Database Server**
+
+In the first terminal, run this command:
+
+```bash
+npm run server
+
+# This will start the backend server at http://localhost:4000
+```
+
+3. **Start the Client Server**
+
+In the second terminal, run this command:
 
 ```bash
 npm run dev
+
+# This will start the frontend server at http://localhost:2000
 ```
 
-### Setup pnpm (optional)
+## Usage
 
-If you are using `pnpm`, you need to add the following code to your `.npmrc` file:
+- Open your browser and navigate to [http://localhost:2000](http://localhost:2000)
+- Start creating and managing your quizzes!
 
-```bash
-public-hoist-pattern[]=*@heroui/*
-```
+## Notes
 
-After modifying the `.npmrc` file, you need to run `pnpm install` again to ensure that the dependencies are installed correctly.
+- Make sure to run `npm run seed` before starting the servers to initialize the database schema.
+- Both servers need to be running concurrently for the application to work properly.
 
-## License
+## Technologies Used
 
-Licensed under the [MIT license](https://github.com/heroui-inc/next-app-template/blob/main/LICENSE).
+- **Next.js:** Full Stack React Framework.
+- **Node.js:** Backend runtime.
+- **SQLite:** Database.
+- **TailwindCSS:** CSS Framework.
+- **TypeScript:** Type safety.
+- **Framer Motion:** Animation library.
+- **NPM:** Package manager.
+- **HeroUI:** UI library.
