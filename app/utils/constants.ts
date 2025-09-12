@@ -21,5 +21,5 @@ export const QUESTION_INITIAL_VALUE: Question = {
    prompt: '',
    options: [],
    correctAnswer: '',
-   position: 1,
+   position: 0,
 };
