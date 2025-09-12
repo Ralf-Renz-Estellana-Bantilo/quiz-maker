@@ -1,4 +1,4 @@
-import { Question } from '@/types';
+import { Question } from '@/types/types';
 import { QUESTIONS_URL, QUIZZES_URL } from '../utils/urls';
 import { deleteData, inserData, patchData } from './controller';
 

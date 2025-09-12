@@ -1,40 +1,35 @@
 'use client';
 
+import CodeQComponent from '@/app/components/CodeQComponent';
+import MCQComponent from '@/app/components/MCQComponent';
+import ShortQComponent from '@/app/components/ShortQComponent';
 import Timer from '@/app/components/Timer';
 import {
    createAttempAnswerMeta,
    createAttempMeta,
 } from '@/app/controller/attempts';
+import { useBeforeUnload } from '@/app/hook/useBeforeUnload';
+import { useDisableBackButton } from '@/app/hook/useDisableBackHistory';
+import { usePreventDevTools } from '@/app/hook/usePreventDevTools';
 import { useSuspension } from '@/app/hook/useSuspension';
+import { useWindowFocusEvents } from '@/app/hook/useWindowFocusEvents';
 import { QuestionSVG } from '@/app/icons/icons';
-import { getCookie, numberToCharacter, setCookie } from '@/app/utils/utils';
-import { QuestionRaw, QuizWithRawQuestions } from '@/types';
+import { QUESTION_INITIAL_VALUE } from '@/app/utils/constants';
+import { getCookie, setCookie } from '@/app/utils/utils';
+import { QuestionRaw, QuizWithRawQuestions } from '@/types/types';
 import {
    addToast,
    Button,
-   Checkbox,
    Chip,
-   Input,
    Modal,
    ModalBody,
    ModalContent,
    ModalFooter,
    ModalHeader,
-   Textarea,
    useDisclosure,
 } from '@heroui/react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-
-const QUESTION_INITIAL_VALUE: QuestionRaw = {
-   id: 0,
-   quizId: 0,
-   type: 'short',
-   prompt: '',
-   options: [],
-   correctAnswer: '',
-   position: 1,
-};
+import React, { useEffect, useState } from 'react';
 
 export default function ExamPage() {
    const router = useRouter();
@@ -44,7 +39,7 @@ export default function ExamPage() {
 
    const [tab, setTab] = useState(0);
    const [question, setQuestion] = useState<QuestionRaw>(
-      QUESTION_INITIAL_VALUE
+      QUESTION_INITIAL_VALUE as unknown as QuestionRaw
    );
    const [answerList, setAnswerList] = useState<Record<number, string>>({});
    const [timeLeft, setTimeLeft] = useState(0);
@@ -68,7 +63,6 @@ export default function ExamPage() {
       const questionLength = quizInfo!.questions.length;
       const answerLength = Object.values(answerList).length;
 
-      console.log({ answerList, quizInfo });
       if (questionLength !== answerLength) {
          setSubmitPopupConfirmation({
             answerLength,
@@ -140,9 +134,35 @@ export default function ExamPage() {
       });
    };
 
+   useBeforeUnload(true);
+   useDisableBackButton();
+   usePreventDevTools();
    useEffect(() => {
       getQuizWithQuestions();
    }, []);
+   useWindowFocusEvents(
+      () => console.log('Window focused'),
+      () => {
+         const DEDUCTION_SECOND = 60;
+         const timeLeftFromCookie = getCookie<number>('timeLeft', timeLeft);
+         const deductedTime = timeLeftFromCookie - DEDUCTION_SECOND;
+
+         if (deductedTime <= 0) {
+            onTimeExpire();
+            return;
+         }
+
+         setTimeLeft(deductedTime);
+         setCookie('timeLeft', `${deductedTime}`);
+
+         addToast({
+            title: 'Window Out-of-focus',
+            description: `The system detected page unfocus. Deducted ${DEDUCTION_SECOND} seconds to your time left.`,
+            variant: 'bordered',
+            color: 'warning',
+         });
+      }
+   );
 
    if (!quizInfo) return null;
 
@@ -182,72 +202,40 @@ export default function ExamPage() {
                      </div>
 
                      <div className='flex flex-col gap-2'>
-                        <h3 className='py-1 font-semibold text-center'>
+                        <h3 className='py-1 font-semibold text-center select-none'>
                            {question.prompt}
                         </h3>
 
-                        <div className='flex flex-col gap-2 p-2 rounded-md border-1 border-slate-700 bg-slate-500/05 backdrop-filter backdrop-blur-sm'>
-                           {question.type === 'mcq' && (
-                              <div className='flex flex-col gap-1 p-2'>
-                                 {question.options.map((option, idx) => (
-                                    <div
-                                       className='flex items-center justify-between px-2 rounded-md bg-slate-500/10 backdrop-filter backdrop-blur-sm'
-                                       key={option}>
-                                       <div className='flex items-center gap-5'>
-                                          <Checkbox
-                                             className='border-r-1 border-r-slate-600'
-                                             isSelected={
-                                                answerList[questionId] ===
-                                                `${idx}`
-                                             }
-                                             onValueChange={() =>
-                                                handleAnswerChange(
-                                                   questionId,
-                                                   `${idx}`
-                                                )
-                                             }>
-                                             {numberToCharacter(idx)}
-                                          </Checkbox>
-                                          <span className='p-2 text-sm'>
-                                             {option}
-                                          </span>
-                                       </div>
-                                    </div>
-                                 ))}
-                              </div>
-                           )}
+                        {question.type === 'mcq' && (
+                           <MCQComponent
+                              mode='read'
+                              value={answerList[questionId]}
+                              options={question.options}
+                              onChange={() => {}}
+                              onSelectCorrectAnswer={(value) =>
+                                 handleAnswerChange(questionId, `${value}`)
+                              }
+                           />
+                        )}
 
-                           {question.type === 'short' && (
-                              <Input
-                                 label='Answer'
-                                 placeholder='Enter your answer here...'
-                                 variant='bordered'
-                                 value={answerList[questionId] ?? ''}
-                                 onChange={(e) =>
-                                    handleAnswerChange(
-                                       questionId,
-                                       e.target.value
-                                    )
-                                 }
-                              />
-                           )}
+                        {question.type === 'short' && (
+                           <ShortQComponent
+                              mode='read'
+                              value={answerList[questionId] ?? ''}
+                              onChange={(value) =>
+                                 handleAnswerChange(questionId, value)
+                              }
+                           />
+                        )}
 
-                           {question.type === 'code' && (
-                              <Textarea
-                                 label='Code Snippet'
-                                 variant='bordered'
-                                 maxRows={70}
-                                 placeholder='Enter your code here...'
-                                 value={answerList[questionId] ?? ''}
-                                 onChange={(e) =>
-                                    handleAnswerChange(
-                                       questionId,
-                                       e.target.value
-                                    )
-                                 }
-                              />
-                           )}
-                        </div>
+                        {question.type === 'code' && (
+                           <CodeQComponent
+                              value={answerList[questionId] ?? ''}
+                              onChange={(value) =>
+                                 handleAnswerChange(questionId, value)
+                              }
+                           />
+                        )}
                      </div>
                   </div>
 
@@ -288,11 +276,7 @@ export default function ExamPage() {
                ))}
             </div>
          </div>
-         <Modal
-            isDismissable={false}
-            backdrop='blur'
-            isOpen={isOpen}
-            onOpenChange={onOpenChange}>
+         <Modal backdrop='blur' isOpen={isOpen} onOpenChange={onOpenChange}>
             <ModalContent>
                {(onClose) => (
                   <>

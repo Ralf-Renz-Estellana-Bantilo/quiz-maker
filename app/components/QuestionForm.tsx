@@ -1,11 +1,18 @@
 'use client';
 
-import { ChangeHandler, Question, Quiz, QuizWithQuestions } from '@/types';
+import {
+   ChangeHandler,
+   Question,
+   Quiz,
+   QuizWithQuestions,
+} from '@/types/types';
 import { Button } from '@heroui/button';
 import { addToast, Chip, ScrollShadow, useDisclosure } from '@heroui/react';
 import { useRouter } from 'next/navigation';
+import { useCallback } from 'react';
 import { TOAST_PROPERTIES } from '../context/context';
 import { updateQuizMeta } from '../controller/quizzes';
+import { useSuspension } from '../hook/useSuspension';
 import { EditSVG } from '../icons/icons';
 import { convertSecondsToMinutes, deleteAllCookies } from '../utils/utils';
 import CreateQuizModal from './modals/CreateQuizModal';
@@ -17,77 +24,112 @@ const QuestionForm = ({
    onAddQuestion,
    onChange,
    handleAfterUpdateQuiz,
+   onCancelUpdateQuestion,
 }: {
    quiz: QuizWithQuestions;
    form: Question;
    onChange: ({ type, value }: ChangeHandler) => void;
    onAddQuestion: (form: Question) => void;
+   onCancelUpdateQuestion: () => void;
    handleAfterUpdateQuiz: (quiz: Quiz) => void;
 }) => {
    const router = useRouter();
+   const { execute } = useSuspension();
    const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
-   const updateQuiz = async (form: Quiz) => {
-      const updatedQuiz: Quiz = {
-         ...form,
-         timeLimitSeconds:
-            form.timeLimitSeconds && form.timeLimitSeconds != 0
-               ? Number(form.timeLimitSeconds) * 60
-               : null,
-      };
+   const handleFormChange = useCallback(
+      (change: ChangeHandler) => {
+         onChange(change);
+      },
+      [onChange]
+   );
 
-      console.log({
-         form,
-         updatedQuiz,
+   const updateQuiz = (form: Quiz) => {
+      execute(() => {
+         const updatedQuiz: Quiz = {
+            ...form,
+            timeLimitSeconds:
+               form.timeLimitSeconds && form.timeLimitSeconds != 0
+                  ? Number(form.timeLimitSeconds) * 60
+                  : null,
+         };
+
+         handleAfterUpdateQuiz(updatedQuiz);
       });
-
-      handleAfterUpdateQuiz(updatedQuiz);
    };
 
    const cancelQuizCreation = () => {
-      deleteAllCookies();
-      router.push('/');
+      execute(() => {
+         deleteAllCookies();
+         router.push('/');
+      });
    };
 
-   const saveQuiz = async () => {
-      if (quiz.questions.length === 0) return;
+   const saveQuiz = () => {
+      execute(async () => {
+         if (quiz.questions.length === 0) return;
 
-      const { questions: _, ...restValue } = quiz;
-      const updatedQuiz: Quiz = {
-         ...restValue,
-         isPublished: true,
-      };
+         const { questions: _, ...restValue } = quiz;
+         const updatedQuiz: Quiz = {
+            ...restValue,
+            isPublished: true,
+         };
 
-      await updateQuizMeta(updatedQuiz);
+         await updateQuizMeta(updatedQuiz);
 
-      deleteAllCookies();
-      router.push('/quizzes/list');
+         deleteAllCookies();
+         router.push('/quizzes/list');
+      });
    };
 
    const addQuestion = () => {
-      if (!Boolean(form.prompt.trim())) {
-         addToast({
-            ...TOAST_PROPERTIES,
-            description: 'The question field should have value.',
-         });
-         return;
-      } else if (form.type === 'mcq') {
-         const options = form.options ?? [];
-         const hasCorrectValue = options
-            .map((opt) => opt.isSelected)
-            .includes(true);
-
-         if (!hasCorrectValue) {
+      execute(() => {
+         if (!Boolean(form.prompt.trim())) {
             addToast({
                ...TOAST_PROPERTIES,
-               description: 'No correct answer selected yet.',
+               description: 'The question field should have value.',
             });
             return;
          }
-      }
 
-      onAddQuestion(form);
+         if (form.type === 'short' && !Boolean(form.correctAnswer.trim())) {
+            addToast({
+               ...TOAST_PROPERTIES,
+               description: 'Correct value should be provided.',
+            });
+            return;
+         }
+
+         if (form.type === 'mcq') {
+            const options = form.options ?? [];
+            const hasCorrectValue = options
+               .map((opt) => opt.isSelected)
+               .includes(true);
+
+            if (!hasCorrectValue) {
+               addToast({
+                  ...TOAST_PROPERTIES,
+                  description: 'No correct answer selected yet.',
+               });
+               return;
+            } else if (form.options!.length <= 1) {
+               addToast({
+                  ...TOAST_PROPERTIES,
+                  description: 'Should have at least 2 options.',
+               });
+               return;
+            }
+         }
+
+         onAddQuestion(form);
+      });
    };
+
+   const handleEnterKey = useCallback(() => {
+      addQuestion();
+   }, [addQuestion]);
+
+   const isCreating = form.id === 0;
 
    return (
       <>
@@ -130,14 +172,15 @@ const QuestionForm = ({
                         className='flex-grow'
                         onPress={cancelQuizCreation}
                         color='primary'
-                        variant='bordered'>
+                        variant='light'>
                         Cancel
                      </Button>
                      <Button
                         className='flex-grow'
                         onPress={saveQuiz}
                         isDisabled={quiz.questions.length === 0}
-                        color='primary'>
+                        color='primary'
+                        variant='bordered'>
                         Save
                      </Button>
                   </div>
@@ -147,20 +190,34 @@ const QuestionForm = ({
             <div className='flex flex-col justify-between h-full'>
                <ScrollShadow
                   hideScrollBar
-                  className=' overflow-y-auto max-h-[65vh] pb-10'>
+                  className='w-full overflow-y-auto max-h-[65vh] pb-10'>
                   <QuestionCard
-                     title={
-                        form.id === 0 ? 'Create Question' : 'Modify Question'
-                     }
+                     title={isCreating ? 'Create Question' : 'Modify Question'}
                      value={form}
-                     onChange={onChange}
-                     mode='create'
+                     onChange={handleFormChange}
+                     mode='edit'
+                     onEnterKey={handleEnterKey}
                   />
                </ScrollShadow>
 
-               <Button color='primary' onPress={addQuestion}>
-                  {form.id === 0 ? 'Add Question' : 'Update Question'}
-               </Button>
+               <div className='flex items-center gap-2'>
+                  {!isCreating && (
+                     <Button
+                        className='w-full'
+                        color='primary'
+                        variant='bordered'
+                        onPress={onCancelUpdateQuestion}>
+                        Cancel Update
+                     </Button>
+                  )}
+
+                  <Button
+                     className='w-full'
+                     color='primary'
+                     onPress={addQuestion}>
+                     {isCreating ? 'Add Question' : 'Update Question'}
+                  </Button>
+               </div>
             </div>
          </div>
       </>

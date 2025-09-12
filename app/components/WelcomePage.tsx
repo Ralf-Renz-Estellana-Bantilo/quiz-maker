@@ -1,9 +1,9 @@
 'use client';
 
 import Illustration from '@/public/assets/illustration_questions.svg';
-import { Quiz } from '@/types';
+import { Quiz } from '@/types/types';
 import { Button } from '@heroui/button';
-import { useDisclosure } from '@heroui/react';
+import { addToast, useDisclosure } from '@heroui/react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { createQuizMeta } from '../controller/quizzes';
@@ -17,20 +17,29 @@ const WelcomePage = () => {
    const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
    const createQuiz = async (form: Quiz) => {
-      try {
-         const newQuiz: Quiz = {
-            ...form,
-            timeLimitSeconds: form.timeLimitSeconds
-               ? form.timeLimitSeconds * 60
-               : null,
-         };
+      if (Boolean(form.title) && Boolean(form.description)) {
+         try {
+            const newQuiz: Quiz = {
+               ...form,
+               timeLimitSeconds: form.timeLimitSeconds
+                  ? form.timeLimitSeconds * 60
+                  : null,
+            };
 
-         const response = await createQuizMeta(newQuiz);
+            const response = await createQuizMeta(newQuiz);
 
-         setCookie('quizId', `${response.id}`);
-         router.push(`quizzes/create`);
-      } catch (error) {
-         console.log(error);
+            setCookie('quizId', `${response.id}`);
+            router.push(`quizzes/create`);
+         } catch (error) {
+            console.log(error);
+         }
+      } else {
+         addToast({
+            title: 'Error Adding New Quiz',
+            description: 'Missing information. Please try again.',
+            variant: 'bordered',
+            color: 'warning',
+         });
       }
    };
 

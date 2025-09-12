@@ -1,8 +1,9 @@
 'use client';
 
-import { Quiz } from '@/types';
+import { Quiz } from '@/types/types';
 import {
    Button,
+   Form,
    Input,
    Modal,
    ModalBody,
@@ -10,7 +11,7 @@ import {
    ModalFooter,
    ModalHeader,
 } from '@heroui/react';
-import { ChangeEvent, useEffect, useState } from 'react';
+import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
 
 const CreateQuizModal = ({
    isOpen,
@@ -35,35 +36,31 @@ const CreateQuizModal = ({
       }));
    };
 
-   const continueHandler = (onClose: () => void) => {
+   const onSubmit = (e: FormEvent<HTMLFormElement>, onClose: () => void) => {
+      e.preventDefault();
+
       onContinue(form);
       onClose();
    };
 
    useEffect(() => {
-      const timeLimitSeconds =
-         initialValue.id !== 0
-            ? Number(initialValue.timeLimitSeconds) / 60
-            : initialValue.timeLimitSeconds;
-
-      console.log({ timeLimitSeconds });
+      const isEditing = initialValue.id !== 0;
+      const timeLimitSeconds = isEditing
+         ? Number(initialValue.timeLimitSeconds) / 60
+         : initialValue.timeLimitSeconds;
 
       setForm({ ...initialValue, timeLimitSeconds });
    }, [initialValue]);
 
    return (
-      <Modal
-         isDismissable={false}
-         backdrop='blur'
-         isOpen={isOpen}
-         onOpenChange={onOpenChange}>
+      <Modal backdrop='blur' isOpen={isOpen} onOpenChange={onOpenChange}>
          <ModalContent>
             {(onClose) => (
-               <>
-                  <ModalHeader className='flex flex-col gap-1'>
-                     {title}
-                  </ModalHeader>
-                  <ModalBody>
+               <Form
+                  className='flex flex-col'
+                  onSubmit={(e) => onSubmit(e, onClose)}>
+                  <ModalHeader>{title}</ModalHeader>
+                  <ModalBody className='flex flex-col w-full'>
                      <Input
                         label='Title'
                         isRequired
@@ -86,17 +83,15 @@ const CreateQuizModal = ({
                         onChange={onChangeInput}
                      />
                   </ModalBody>
-                  <ModalFooter>
+                  <ModalFooter className='flex items-center justify-end w-full border-t-1 border-t-slate-700'>
                      <Button color='danger' variant='light' onPress={onClose}>
                         Close
                      </Button>
-                     <Button
-                        color='primary'
-                        onPress={() => continueHandler(onClose)}>
+                     <Button color='primary' type='submit'>
                         Continue
                      </Button>
                   </ModalFooter>
-               </>
+               </Form>
             )}
          </ModalContent>
       </Modal>

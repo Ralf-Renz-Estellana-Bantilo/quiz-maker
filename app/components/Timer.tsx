@@ -33,6 +33,10 @@ const Timer: React.FC<TimerProps> = ({ timeLimitSeconds, onFinish }) => {
       };
    }, [timeLeft, onFinish]);
 
+   useEffect(() => {
+      setTimeLeft(timeLimitSeconds);
+   }, [timeLimitSeconds]);
+
    let displayValue: string;
 
    if (timeLeft > 60) {

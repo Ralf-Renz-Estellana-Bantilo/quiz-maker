@@ -12,7 +12,10 @@ import {
    updateQuizMeta,
 } from '@/app/controller/quizzes';
 import { useSuspension } from '@/app/hook/useSuspension';
-import { DEFAULT_QUIZWITHQUESTIONS_FORM_VALUE } from '@/app/utils/constants';
+import {
+   DEFAULT_QUIZWITHQUESTIONS_FORM_VALUE,
+   QUESTION_INITIAL_VALUE,
+} from '@/app/utils/constants';
 import { getCookie } from '@/app/utils/utils';
 import {
    ChangeHandler,
@@ -20,18 +23,8 @@ import {
    Question,
    Quiz,
    QuizWithQuestions,
-} from '@/types';
-import { useEffect, useState } from 'react';
-
-const QUESTION_INITIAL_VALUE: Question = {
-   id: 0,
-   quizId: 0,
-   type: 'short',
-   prompt: '',
-   options: [],
-   correctAnswer: '',
-   position: 1,
-};
+} from '@/types/types';
+import { useCallback, useEffect, useState } from 'react';
 
 export default function CreateQuizPage() {
    const { execute } = useSuspension();
@@ -41,141 +34,121 @@ export default function CreateQuizPage() {
       DEFAULT_QUIZWITHQUESTIONS_FORM_VALUE
    );
 
-   const onChange = ({ type, value }: ChangeHandler) => {
-      if (type === 'option') {
-         setForm((prev) => ({
-            ...prev,
-            options: value,
-         }));
-      } else {
-         setForm((prev) => ({
-            ...prev,
-            [type]: value,
-         }));
-      }
-   };
+   const onChange = useCallback(({ type, value }: ChangeHandler) => {
+      setForm((prev) =>
+         type === 'option'
+            ? { ...prev, options: value }
+            : { ...prev, [type]: value }
+      );
+   }, []);
 
-   const addQuestion = async (formValue: Question) => {
-      const quizIdFromCookie = getCookie<number>('quizId', 0);
-      const updatedForm: Question = {
-         ...formValue,
-         quizId: quizIdFromCookie,
-      };
-
-      let payload: any = updatedForm;
-      if (formValue.type === 'short') {
-         const { options: _, ...restValue } = updatedForm;
-
-         payload = restValue;
-      } else if (formValue.type === 'mcq') {
-         payload = {
-            ...updatedForm,
-            options: updatedForm.options?.map((opt) => opt.label),
+   const addQuestion = useCallback(
+      async (formValue: Question) => {
+         const quizIdFromCookie = getCookie<number>('quizId', 0);
+         const updatedForm: Question = {
+            ...formValue,
+            quizId: quizIdFromCookie,
          };
-      }
 
-      const parseResponse = (response: Question) => {
-         return formValue.type === 'mcq'
-            ? {
-                 ...response,
-                 options: formValue.options,
-              }
-            : response;
-      };
+         let payload: any = updatedForm;
+         if (formValue.type === 'short') {
+            const { options: _, ...restValue } = updatedForm;
+            payload = restValue;
+         } else if (formValue.type === 'mcq') {
+            payload = {
+               ...updatedForm,
+               options: updatedForm.options?.map((opt) => opt.label),
+            };
+         }
 
-      if (formValue.id === 0) {
-         const response = await createQuestionMeta(quizIdFromCookie, payload);
+         const parseResponse = (response: Question) =>
+            formValue.type === 'mcq'
+               ? { ...response, options: formValue.options }
+               : response;
 
-         console.log({
-            newQuizValue: {
-               ...quiz,
-               questions: [...quiz.questions, parseResponse(response)],
-            },
-            quiz,
-            formValue,
-            updatedForm,
-            response,
-         });
+         if (formValue.id === 0) {
+            const response = await createQuestionMeta(
+               quizIdFromCookie,
+               payload
+            );
+            setQuiz((prev) => ({
+               ...prev,
+               questions: [...prev.questions, parseResponse(response)],
+            }));
+         } else {
+            const questionId = formValue.id;
+            const response = await updateQuestionMeta(questionId, payload);
 
-         setQuiz((prev) => ({
-            ...prev,
-            questions: [...prev.questions, parseResponse(response)],
-         }));
-      } else {
-         const questionId = formValue.id;
-         const response = await updateQuestionMeta(questionId, payload);
+            setQuiz((prev) => ({
+               ...prev,
+               questions: prev.questions.map((q) =>
+                  q.id === questionId ? parseResponse(response) : q
+               ),
+            }));
+         }
 
-         const updatedQuestions = quiz.questions.map((q) =>
-            q.id === questionId ? parseResponse(response) : q
-         );
+         setForm(QUESTION_INITIAL_VALUE);
+      },
+      [quiz]
+   );
 
-         setQuiz((prev) => ({
-            ...prev,
-            questions: updatedQuestions,
-         }));
-      }
-
+   const cancelUpdateQuestion = () => {
       setForm(QUESTION_INITIAL_VALUE);
    };
 
-   const editQuestion = (question: Question) => {
+   const editQuestion = useCallback((question: Question) => {
       setForm(question);
-   };
+   }, []);
 
-   const removeQuestion = async (questionId: number) => {
+   const removeQuestion = useCallback(async (questionId: number) => {
       await deleteQuestionMeta(questionId);
       getQuizWithQuestions();
-   };
+   }, []);
 
-   const getQuizWithQuestions = () => {
+   const getQuizWithQuestions = useCallback(() => {
       execute(async () => {
          const quizIdFromCookie = getCookie<number>('quizId', 0);
          const response = await getQuizWithQuestionsMeta(quizIdFromCookie);
 
-         let refactoredQuestion = response.questions.map((question) => {
+         const refactoredQuestion = response.questions.map((question) => {
             const { type, options, correctAnswer } = question;
 
             if (type === 'mcq') {
-               const refactoredOption: Option[] = Array.from(
-                  options,
-                  (option, index) => {
-                     return {
-                        id: Math.floor(Math.random() * 1000000),
-                        isSelected: Number(correctAnswer) === index,
-                        label: option,
-                     };
-                  }
+               const refactoredOption: Option[] = options.map(
+                  (option, index) => ({
+                     id: Math.floor(Math.random() * 1000000),
+                     isSelected: Number(correctAnswer) === index,
+                     label: option,
+                  })
                );
 
-               return {
-                  ...question,
-                  options: refactoredOption,
-               };
-            } else {
-               return question;
+               return { ...question, options: refactoredOption };
             }
+            return question;
          });
 
          const refactoredQuiz: QuizWithQuestions = {
             ...response,
-            questions: refactoredQuestion as unknown as Question[],
+            questions: refactoredQuestion as Question[],
          };
 
          setQuiz(refactoredQuiz);
       });
-   };
-   const handleAfterUpdateQuiz = async (quiz: Quiz) => {
-      await updateQuizMeta(quiz);
-      getQuizWithQuestions();
-   };
+   }, [execute]);
+
+   const handleAfterUpdateQuiz = useCallback(
+      async (quiz: Quiz) => {
+         await updateQuizMeta(quiz);
+         getQuizWithQuestions();
+      },
+      [getQuizWithQuestions]
+   );
 
    useEffect(() => {
       getQuizWithQuestions();
-   }, []);
+   }, [getQuizWithQuestions]);
 
-   if (!quiz) {
-      return null;
-   }
+   if (!quiz) return null;
 
    return (
       <div className='flex w-[90vw] h-[100dvh] gap-5 py-3'>
@@ -183,12 +156,14 @@ export default function CreateQuizPage() {
             quiz={quiz}
             form={form}
             onAddQuestion={addQuestion}
+            onCancelUpdateQuestion={cancelUpdateQuestion}
             onChange={onChange}
             handleAfterUpdateQuiz={handleAfterUpdateQuiz}
          />
 
          <QuestionList
             questions={quiz.questions}
+            formId={form.id}
             onEditQuestion={editQuestion}
             onRemoveQuestion={removeQuestion}
          />

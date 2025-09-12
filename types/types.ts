@@ -19,6 +19,7 @@ export interface Quiz {
    createdAt: string;
 }
 
+export type Mode = 'edit' | 'read';
 export type QuestionType = 'mcq' | 'short' | 'code';
 export interface Option {
    id: number;
@@ -36,14 +37,8 @@ export interface Question {
    position: number;
 }
 
-export interface QuestionRaw {
-   id: number;
-   quizId: number;
-   type: QuestionType;
-   prompt: string;
+export interface QuestionRaw extends Omit<Question, 'options'> {
    options: string[];
-   correctAnswer: string;
-   position: number;
 }
 
 export interface QuizWithQuestions extends Quiz {
@@ -60,19 +55,6 @@ export interface Attempt {
    startedAt: string;
    submittedAt?: string | null;
    score?: number | null;
-}
-
-export interface AttemptAnswer {
-   attemptId: number;
-   questionId: number;
-   value: string;
-}
-
-export interface AttemptEvent {
-   id: number;
-   attemptId: number;
-   event: string;
-   timestamp: string;
 }
 
 interface ResultDetail {

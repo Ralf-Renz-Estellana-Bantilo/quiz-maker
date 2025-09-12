@@ -4,7 +4,7 @@ import { createAttempSubmitMeta } from '@/app/controller/attempts';
 import { useSuspension } from '@/app/hook/useSuspension';
 import { QuestionSVG } from '@/app/icons/icons';
 import { getCookie } from '@/app/utils/utils';
-import { Result } from '@/types';
+import { Result } from '@/types/types';
 import { Button, Chip, ScrollShadow } from '@heroui/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -24,7 +24,6 @@ export default function ResultsPage() {
             const response = await createAttempSubmitMeta(attemptIdFromCookie);
 
             setResult(response);
-            console.log(response);
          } catch (error) {
             router.push('/quizzes/list');
          }

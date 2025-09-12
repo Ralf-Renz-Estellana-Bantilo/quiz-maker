@@ -1,4 +1,4 @@
-import { Quiz, QuizWithRawQuestions } from '@/types';
+import { Quiz, QuizWithRawQuestions } from '@/types/types';
 import { QUIZZES_URL } from '../utils/urls';
 import { fetchData, inserData, patchData } from './controller';
 
