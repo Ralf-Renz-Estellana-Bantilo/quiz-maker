@@ -11,3 +11,7 @@ const composeUrl = (url: `/${string}`) => {
 export const QUIZZES_URL = composeUrl('/quizzes');
 export const QUESTIONS_URL = composeUrl('/questions');
 export const ATTEMPTS_URL = composeUrl('/attempts');
+
+export const quizzesUrl = '/quizzes';
+export const questionsUrl = '/questions';
+export const attemptsUrl = '/attempts';

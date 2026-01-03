@@ -2,7 +2,7 @@ import { QuizWithRawQuestions, Result } from '@/types/types';
 import { ATTEMPTS_URL } from '../utils/urls';
 import { inserData } from './controller';
 
-interface Attempt {
+export interface Attempt {
    answers: any[];
    id: number;
    quiz: QuizWithRawQuestions;
@@ -29,4 +29,33 @@ export const createAttempSubmitMeta = async (
    attemptId: number
 ): Promise<Result> => {
    return inserData<Result>(`${ATTEMPTS_URL}/${attemptId}/submit`);
+};
+
+export const createAttempMetaNew = async (quizId: number) => {
+   const res = await fetch('/api/attempts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ quizId }),
+   });
+
+   return res.json();
+};
+
+export const createAttempAnswerMetaNew = async (
+   attemptId: number,
+   payload: { questionId: number; value: string }
+) => {
+   await fetch(`/api/attempts/${attemptId}/answer`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+   });
+};
+
+export const createAttempSubmitMetaNew = async (attemptId: number) => {
+   const res = await fetch(`/api/attempts/${attemptId}/submit`, {
+      method: 'POST',
+   });
+
+   return res.json();
 };
