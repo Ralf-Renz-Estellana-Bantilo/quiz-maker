@@ -44,9 +44,12 @@ export default function CreateQuizPage() {
 
    const addQuestion = useCallback(
       async (formValue: Question) => {
+         const isCreating = formValue.id === 0;
          const quizIdFromCookie = getCookie<number>('quizId', 0);
+
          const updatedForm: Question = {
             ...formValue,
+            position: isCreating ? quiz.questions.length : formValue.position,
             quizId: quizIdFromCookie,
          };
 
@@ -66,7 +69,7 @@ export default function CreateQuizPage() {
                ? { ...response, options: formValue.options }
                : response;
 
-         if (formValue.id === 0) {
+         if (isCreating) {
             const response = await createQuestionMeta(
                quizIdFromCookie,
                payload
@@ -100,10 +103,46 @@ export default function CreateQuizPage() {
       setForm(question);
    }, []);
 
-   const removeQuestion = useCallback(async (questionId: number) => {
-      await deleteQuestionMeta(questionId);
-      getQuizWithQuestions();
-   }, []);
+   const removeQuestion = useCallback(
+      async (questionId: number, questions: Question[]) => {
+         const questionIndex = questions.findIndex((q) => q.id === questionId);
+
+         const isDeletingOnlyItemOnTheList =
+            questionIndex === 0 && questions.length === 1;
+
+         if (isDeletingOnlyItemOnTheList) {
+            await deleteQuestionMeta(questionId);
+            getQuizWithQuestions();
+
+            return;
+         }
+
+         const questionsToBeUpdated =
+            questionIndex === 0
+               ? questions.slice(1)
+               : questions.toSpliced(0, questionIndex + 1);
+
+         let position = questionIndex;
+         const updatedQuestions = questionsToBeUpdated.map((question) => {
+            const result = {
+               ...question,
+               position,
+            };
+
+            position++;
+            return result;
+         });
+
+         await deleteQuestionMeta(questionId);
+         await Promise.allSettled(
+            updatedQuestions.map((question) =>
+               updateQuestionMeta(question.id, question)
+            )
+         );
+         getQuizWithQuestions();
+      },
+      []
+   );
 
    const getQuizWithQuestions = useCallback(() => {
       execute(async () => {
@@ -146,7 +185,7 @@ export default function CreateQuizPage() {
 
    useEffect(() => {
       getQuizWithQuestions();
-   }, [getQuizWithQuestions]);
+   }, []);
 
    if (!quiz) return null;
 

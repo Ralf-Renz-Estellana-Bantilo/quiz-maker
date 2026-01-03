@@ -22,7 +22,7 @@ interface QuestionCardProps {
    hasActionButtons?: boolean;
    onChange: (arg: ChangeHandler) => void;
    onEditQuestion?: (question: Question) => void;
-   onRemoveQuestion?: (questionId: number) => void;
+   onRemoveQuestion?: (question: Question) => void;
    onEnterKey?: () => void;
 }
 
@@ -64,7 +64,7 @@ const QuestionCard = ({
    onEditQuestion,
    onRemoveQuestion,
 }: QuestionCardProps) => {
-   const { type, id, prompt, correctAnswer } = value;
+   const { type, prompt, correctAnswer } = value;
 
    const options = value.options ?? [];
 
@@ -131,7 +131,7 @@ const QuestionCard = ({
 
                         <Button
                            isIconOnly
-                           onPress={() => onRemoveQuestion?.(id)}
+                           onPress={() => onRemoveQuestion?.(value)}
                            aria-label='Delete question'
                            variant='light'>
                            <DeleteSVG />

@@ -24,6 +24,7 @@ const CodeQComponent = ({
          <Textarea
             label='Code snippet'
             placeholder='Enter your code here...'
+            maxRows={11}
             variant='bordered'
             value={value}
             isDisabled={isDisabled}
